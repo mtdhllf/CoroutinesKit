@@ -2,6 +2,7 @@ package com.mtdhllf.kit.coroutines.demo;
 
 import android.util.Log;
 import com.github.mtdhllf.kit.coroutines.AbsInterval;
+import com.github.mtdhllf.kit.coroutines.Interval;
 import com.github.mtdhllf.kit.coroutines.Run;
 import kotlinx.coroutines.Job;
 
@@ -32,6 +33,29 @@ public class Test {
             }
         },10,1000);
 
+    }
+
+    public static Job test14(){
+
+        Log.i("test14","start");
+        return Run.onUiInterval(new Interval(){
+
+            @Override
+            public void cancel() {
+                Log.i("test14", "cancel");
+            }
+
+            @Override
+            public void finish() {
+                Log.i("test14", "finish");
+            }
+
+            @Override
+            public void tick(int index) {
+                Log.i("test14", index+"");
+            }
+
+        }, 1000);
     }
 
 }

@@ -14,4 +14,11 @@ abstract class AbsInterval : Interval {
 
     }
 
+    /**
+     * 空实现,需要时自行覆盖
+     */
+    override fun cancel() {
+
+    }
+
 }
