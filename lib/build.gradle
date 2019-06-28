@@ -41,7 +41,7 @@ publish {
     userOrg = 'mtdhllf'
     groupId = 'com.github.mtdhllf'
     artifactId = 'kit-coroutines'
-    publishVersion = '1.2.0'
+    publishVersion = '1.2.2'
     desc = 'a android coroutines library'
     website = 'https://github.com/mtdhllf/CoroutinesKit'
 }

@@ -103,11 +103,19 @@ class MainActivity : AppCompatActivity() {
 //
 //        val job = Test.test13()
 //        Run.onUiASyncDelay({
+//            job.cancel()
 //            Log.e("test13","${job.isActive}")
 //            Log.e("test13","${job.isCancelled}")
 //            Log.e("test13","${job.isCompleted}")
-//            job.cancel()
 //        }, 3000)
+//
+//        val test14 = Test.test14()
+//        Run.onUiASyncDelay({
+//            test14.cancel()
+//        },5000)
+//        Run.onUiASyncDelay({
+//            test14.start()
+//        },7000)
 
     }
 
