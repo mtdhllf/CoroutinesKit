@@ -113,7 +113,7 @@ class HandlerPoster(looper: Looper, maxMillisInsideHandleMessage: Int, onlyAsync
          *
          * @param task [Task]
          */
-        internal fun offer(task: Task) {
+        fun offer(task: Task) {
             synchronized(mPool) {
                 // offer to queue pool
                 mPool.offer(task)
@@ -132,7 +132,7 @@ class HandlerPoster(looper: Looper, maxMillisInsideHandleMessage: Int, onlyAsync
         /**
          * dispatch form [mPool]
          */
-        internal fun dispatch() {
+        fun dispatch() {
             var rescheduled = false
             try {
                 val started = SystemClock.uptimeMillis()
@@ -168,7 +168,7 @@ class HandlerPoster(looper: Looper, maxMillisInsideHandleMessage: Int, onlyAsync
         /**
          * dispose the Dispatcher on your no't need use
          */
-        internal fun dispose() {
+        fun dispose() {
             mPool.clear()
             mPoster = null
         }
@@ -193,7 +193,7 @@ class HandlerPoster(looper: Looper, maxMillisInsideHandleMessage: Int, onlyAsync
         /**
          * This's poster can to send refresh message
          */
-        internal interface IPoster {
+        interface IPoster {
             fun sendMessage()
         }
     }

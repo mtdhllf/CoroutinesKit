@@ -16,7 +16,7 @@ public class Test {
     public static Job test13(){
 
         Log.i("test13","start");
-        return Run.onUiTimesInterval(new AbsInterval() {
+        return Run.onUiTimesInterval(10,1000,new AbsInterval() {
             @Override
             public void tick(int index) {
                 Log.i("test13",index+"");
@@ -31,14 +31,14 @@ public class Test {
             public void cancel() {
                 Log.i("test13","cancel");
             }
-        },10,1000);
+        });
 
     }
 
     public static Job test14(){
 
         Log.i("test14","start");
-        return Run.onUiInterval(new Interval(){
+        return Run.onUiInterval(1000,new Interval(){
 
             @Override
             public void cancel() {
@@ -55,7 +55,7 @@ public class Test {
                 Log.i("test14", index+"");
             }
 
-        }, 1000);
+        });
     }
 
 }

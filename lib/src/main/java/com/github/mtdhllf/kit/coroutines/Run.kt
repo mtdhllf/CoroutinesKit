@@ -2,7 +2,9 @@ package com.github.mtdhllf.kit.coroutines
 
 import android.os.Looper
 import android.os.SystemClock
+import android.util.Log
 import kotlinx.coroutines.*
+import java.lang.Runnable
 
 /**
  * author: mtdhllf
@@ -49,43 +51,48 @@ object Run {
 
     /**
      * UI线程延迟同步执行
-     * @param [action] 任务
      * @param [delay]  延迟时间
+     * @param [action] 任务
      */
     @JvmStatic
-    fun onUiSyncDelay(action: Action, delay: Long) {
+    fun onUiSyncDelay(delay: Long, action: Action) {
         uiPoster.postDelayed({ action.call() }, delay)
     }
 
     /**
      * UI线程延迟同步执行
-     * @param [action] 任务
      * @param [delay]  延迟时间
+     * @param [action] 任务
      */
-    fun onUiSyncDelay(action: () -> Unit, delay: Long) {
+    fun onUiSyncDelay(delay: Long, action: () -> Unit) {
         uiPoster.postDelayed({ action() }, delay)
     }
 
 
     /**
      * UI线程定时同步执行
-     * @param [action] 任务
      * @param [atTime] 定时时间(需要大于当前时间,时间差太远建议使用 [Run.onUiASyncAtTime] )
+     * @param [action] 任务
      */
     @JvmStatic
-    fun onUiSyncAtTime(action: Action, atTime: Long) {
-        uiPoster.postAtTime({ action.call() }, atTime - System.currentTimeMillis() + SystemClock.uptimeMillis())
+    fun onUiSyncAtTime(atTime: Long, action: Action) {
+        uiPoster.postAtTime(
+            { action.call() },
+            atTime - System.currentTimeMillis() + SystemClock.uptimeMillis()
+        )
     }
 
     /**
      * UI线程定时同步执行
-     * @param [action] 任务
      * @param [atTime] 定时时间(需要大于当前时间,时间差太远建议使用 [Run.onUiASyncAtTime] )
+     * @param [action] 任务
      */
-    fun onUiSyncAtTime(action: () -> Unit, atTime: Long) {
-        uiPoster.postAtTime({ action() }, atTime - System.currentTimeMillis() + SystemClock.uptimeMillis())
+    fun onUiSyncAtTime(atTime: Long, action: () -> Unit) {
+        uiPoster.postAtTime(
+            { action() },
+            atTime - System.currentTimeMillis() + SystemClock.uptimeMillis()
+        )
     }
-
 
     /**
      * UI线程异步执行
@@ -112,28 +119,36 @@ object Run {
 
     /**
      * UI线程异步执行(超时检查)
-     * @param [action]            任务
      * @param [millisTimeOut] 超时时间
+     * @param [action]            任务
      * @return 可主动取消的任务
      */
     @JvmStatic
-    @Deprecated(level = DeprecationLevel.WARNING, message = "测试不够充分,请谨慎使用", replaceWith = ReplaceWith(""))
-    fun onUiASync(action: Action, millisTimeOut: Long): Job {
-        return GlobalScope.launch(Dispatchers.Main) {
-            withTimeoutOrNull(millisTimeOut) {
-                action.call()
-            }
+    @Deprecated(
+        level = DeprecationLevel.WARNING,
+        message = "测试未通过,请谨慎使用",
+        replaceWith = ReplaceWith("")
+    )
+    fun onUiASync(millisTimeOut: Long, action: Action): Job {
+        val job = GlobalScope.launch(Dispatchers.Main) {
+            action.call()
         }
+        uiPoster.postDelayed({ job.cancel() }, millisTimeOut)
+        return job
     }
 
     /**
      * UI线程异步执行(超时检查)
-     * @param [action]            任务
      * @param [millisTimeOut] 超时时间
+     * @param [action]            任务
      * @return 可主动取消的任务
      */
-    @Deprecated(level = DeprecationLevel.WARNING, message = "测试不够充分,请谨慎使用", replaceWith = ReplaceWith(""))
-    fun onUiASync(action: () -> Unit, millisTimeOut: Long): Job {
+    @Deprecated(
+        level = DeprecationLevel.WARNING,
+        message = "测试未通过,请谨慎使用",
+        replaceWith = ReplaceWith("")
+    )
+    fun onUiASync(millisTimeOut: Long, action: () -> Unit): Job {
         return GlobalScope.launch(Dispatchers.Main) {
             withTimeoutOrNull(millisTimeOut) {
                 action()
@@ -144,12 +159,12 @@ object Run {
 
     /**
      * UI线程异步延迟执行
-     * @param [action] 任务
      * @param [delay]  延迟时间
+     * @param [action] 任务
      * @return 可主动取消的任务
      */
     @JvmStatic
-    fun onUiASyncDelay(action: Action, delay: Long): Job {
+    fun onUiASyncDelay(delay: Long, action: Action): Job {
         return GlobalScope.launch(Dispatchers.Main) {
             delay(delay)
             action.call()
@@ -158,11 +173,11 @@ object Run {
 
     /**
      * UI线程异步延迟执行
-     * @param [action] 任务
      * @param [delay]  延迟时间
+     * @param [action] 任务
      * @return 可主动取消的任务
      */
-    fun onUiASyncDelay(action: () -> Unit, delay: Long): Job {
+    fun onUiASyncDelay(delay: Long, action: () -> Unit): Job {
         return GlobalScope.launch(Dispatchers.Main) {
             delay(delay)
             action()
@@ -172,12 +187,12 @@ object Run {
 
     /**
      * UI线程异步延迟执行
-     * @param [action] 任务
      * @param [atTime] 指定时间(需要大于当前时间,否则立即执行)
+     * @param [action] 任务
      * @return 可主动取消的任务
      */
     @JvmStatic
-    fun onUiASyncAtTime(action: Action, atTime: Long): Job {
+    fun onUiASyncAtTime(atTime: Long, action: Action): Job {
         return GlobalScope.launch(Dispatchers.Main) {
             delay(atTime - System.currentTimeMillis())
             action.call()
@@ -186,11 +201,11 @@ object Run {
 
     /**
      * UI线程异步延迟执行
-     * @param [action] 任务
      * @param [atTime] 指定时间(需要大于当前时间,否则立即执行)
+     * @param [action] 任务
      * @return 可主动取消的任务
      */
-    fun onUiASyncAtTime(action: () -> Unit, atTime: Long): Job {
+    fun onUiASyncAtTime(atTime: Long, action: () -> Unit): Job {
         return GlobalScope.launch(Dispatchers.Main) {
             delay(atTime - System.currentTimeMillis())
             action()
@@ -223,12 +238,16 @@ object Run {
 
     /**
      * IO线程异步执行(超时检查)
-     * @param [action]            任务
      * @param [millisTimeOut]     超时时间
+     * @param [action]            任务
      * @return 可主动取消的任务
      */
-    @Deprecated(level = DeprecationLevel.HIDDEN, message = "测试不够充分,请谨慎使用", replaceWith = ReplaceWith(""))
-    fun onBackground(action: Action, millisTimeOut: Long): Job {
+    @Deprecated(
+        level = DeprecationLevel.HIDDEN,
+        message = "测试未通过,请谨慎使用",
+        replaceWith = ReplaceWith("")
+    )
+    fun onBackground(millisTimeOut: Long, action: Action): Job {
         return GlobalScope.launch(Dispatchers.IO) {
             withTimeoutOrNull(millisTimeOut) {
                 action.call()
@@ -238,12 +257,16 @@ object Run {
 
     /**
      * IO线程异步执行(超时检查)
-     * @param [action]        任务
      * @param [millisTimeOut] 超时时间
+     * @param [action]        任务
      * @return 可主动取消的任务
      */
-    @Deprecated(level = DeprecationLevel.WARNING, message = "测试不够充分,请谨慎使用", replaceWith = ReplaceWith(""))
-    fun onBackground(action: () -> Unit, millisTimeOut: Long): Job {
+    @Deprecated(
+        level = DeprecationLevel.WARNING,
+        message = "测试未通过,请谨慎使用",
+        replaceWith = ReplaceWith("")
+    )
+    fun onBackground(millisTimeOut: Long, action: () -> Unit): Job {
         return GlobalScope.launch(Dispatchers.IO) {
             withTimeoutOrNull(millisTimeOut) {
                 action()
@@ -254,12 +277,12 @@ object Run {
 
     /**
      * IO线程异步延迟执行
-     * @param [action] 任务
      * @param [delay]  延迟时间
+     * @param [action] 任务
      * @return 可主动取消的任务
      */
     @JvmStatic
-    fun onBackgroundDelay(action: Action, delay: Long): Job {
+    fun onBackgroundDelay(delay: Long, action: Action): Job {
         return GlobalScope.launch(Dispatchers.IO) {
             delay(delay)
             action.call()
@@ -268,11 +291,11 @@ object Run {
 
     /**
      * IO线程异步延迟执行
-     * @param [action] 任务
      * @param [delay]  延迟时间
+     * @param [action] 任务
      * @return 可主动取消的任务
      */
-    fun onBackgroundDelay(action: () -> Unit, delay: Long): Job {
+    fun onBackgroundDelay(delay: Long, action: () -> Unit): Job {
         return GlobalScope.launch(Dispatchers.IO) {
             delay(delay)
             action()
@@ -282,12 +305,12 @@ object Run {
 
     /**
      * IO线程异步延迟执行
-     * @param [action] 任务
      * @param [atTime] 指定时间(需要大于当前时间,否则立即执行)
+     * @param [action] 任务
      * @return 可主动取消的任务
      */
     @JvmStatic
-    fun onBackgroundAtTime(action: Action, atTime: Long): Job {
+    fun onBackgroundAtTime(atTime: Long, action: Action): Job {
         return GlobalScope.launch(Dispatchers.IO) {
             delay(atTime - System.currentTimeMillis())
             action.call()
@@ -296,26 +319,25 @@ object Run {
 
     /**
      * IO线程异步延迟执行
-     * @param  [action] 任务
      * @param  [atTime] 指定时间(需要大于当前时间,否则立即执行)
+     * @param  [action] 任务
      * @return 可主动取消的任务
      */
-    fun onBackgroundAtTime(action: () -> Unit, atTime: Long): Job {
+    fun onBackgroundAtTime(atTime: Long, action: () -> Unit): Job {
         return GlobalScope.launch(Dispatchers.IO) {
             delay(atTime - System.currentTimeMillis())
             action()
         }
     }
 
-
     /**
      * 创建UI异步心跳任务,注意:此方法不会回调[Interval.finish]接口
-     * @param [interval] 心跳回调,你可以传入[AbsInterval]按需覆写你需要的接口
      * @param [period]   心跳间隔(毫秒)
+     * @param [interval] 心跳回调,你可以传入[AbsInterval]按需覆写你需要的接口
      * @return 可取消的任务
      */
     @JvmStatic
-    fun onUiInterval(interval: Interval, period: Long): Job {
+    fun onUiInterval(period: Long, interval: Interval): Job {
         return GlobalScope.launch(Dispatchers.Main) {
             var index = 0
             try {
@@ -331,13 +353,13 @@ object Run {
 
     /**
      * 创建UI异步心跳任务,注意:此方法不会回调[Interval.finish]接口
-     * @param [interval] 心跳回调,你可以传入[AbsInterval]按需覆写你需要的接口
      * @param [period]   心跳间隔(毫秒)
      * @param [delay]    延迟执行(毫秒)
+     * @param [interval] 心跳回调,你可以传入[AbsInterval]按需覆写你需要的接口
      * @return 可取消的任务
      */
     @JvmStatic
-    fun onUiInterval(interval: Interval, period: Long, delay: Long): Job {
+    fun onUiInterval(period: Long, delay: Long, interval: Interval): Job {
         return GlobalScope.launch(Dispatchers.Main) {
             var index = 0
             try {
@@ -356,12 +378,12 @@ object Run {
 
     /**
      * 创建UI异步心跳任务
-     * @param [interval] 心跳任务
      * @param [period]   心跳间隔(毫秒)
      * @param [delay]    延迟执行(毫秒)
+     * @param [interval] 心跳任务
      * @return 可取消的任务
      */
-    fun onUiInterval(interval: (index: Int) -> Unit, period: Long, delay: Long = 0): Job {
+    fun onUiInterval(period: Long, delay: Long = 0, interval: (index: Int) -> Unit): Job {
         return GlobalScope.launch(Dispatchers.Main) {
             var index = 0
             delay(delay)
@@ -374,13 +396,18 @@ object Run {
 
     /**
      * 创建UI异步心跳任务
-     * @param [interval] 心跳任务
      * @param [cancel]   取消任务
      * @param [period]   心跳间隔(毫秒)
      * @param [delay]    延迟执行(毫秒)
+     * @param [interval] 心跳任务
      * @return 可取消的任务
      */
-    fun onUiInterval(interval: (index: Int) -> Unit, cancel: () -> Unit, period: Long,delay: Long = 0): Job {
+    fun onUiInterval(
+        cancel: () -> Unit,
+        period: Long,
+        delay: Long = 0,
+        interval: (index: Int) -> Unit
+    ): Job {
         return GlobalScope.launch(Dispatchers.Main) {
             var index = 0
             try {
@@ -397,12 +424,12 @@ object Run {
 
     /**
      * 创建异步心跳任务,注意:此方法不会回调[Interval.finish]接口
-     * @param [interval] 心跳回调,你可以传入[AbsInterval]按需覆写你需要的接口
      * @param [period]   心跳间隔(毫秒)
+     * @param [interval] 心跳回调,你可以传入[AbsInterval]按需覆写你需要的接口
      * @return 可取消的任务
      */
     @JvmStatic
-    fun onIOInterval(interval: Interval, period: Long): Job {
+    fun onIOInterval(period: Long, interval: Interval): Job {
         return GlobalScope.launch(Dispatchers.IO) {
             var index = 0
             try {
@@ -418,13 +445,13 @@ object Run {
 
     /**
      * 创建异步心跳任务,注意:此方法不会回调[Interval.finish]接口
-     * @param [interval] 心跳回调,你可以传入[AbsInterval]按需覆写你需要的接口
      * @param [period]   心跳间隔(毫秒)
      * @param [delay]    延迟执行(毫秒)
+     * @param [interval] 心跳回调,你可以传入[AbsInterval]按需覆写你需要的接口
      * @return 可取消的任务
      */
     @JvmStatic
-    fun onIOInterval(interval: Interval, period: Long, delay: Long): Job {
+    fun onIOInterval(period: Long, delay: Long,interval: Interval): Job {
         return GlobalScope.launch(Dispatchers.IO) {
             var index = 0
             try {
@@ -443,12 +470,12 @@ object Run {
 
     /**
      * 创建异步心跳任务
-     * @param [interval] 心跳任务
      * @param [period]   心跳间隔(毫秒)
      * @param [delay]    延迟执行(毫秒)
+     * @param [interval] 心跳任务
      * @return 可取消的任务
      */
-    fun onIOInterval(interval: (index: Int) -> Unit, period: Long, delay: Long = 0): Job {
+    fun onIOInterval(period: Long, delay: Long = 0,interval: (index: Int) -> Unit): Job {
         return GlobalScope.launch(Dispatchers.IO) {
             var index = 0
             delay(delay)
@@ -461,13 +488,18 @@ object Run {
 
     /**
      * 创建异步心跳任务
-     * @param [interval] 心跳任务
      * @param [cancel]   取消任务
      * @param [period]   心跳间隔(毫秒)
      * @param [delay]    延迟执行(毫秒)
+     * @param [interval] 心跳任务
      * @return 可取消的任务
      */
-    fun onIOInterval(interval: (index: Int) -> Unit, cancel: () -> Unit, period: Long,delay: Long = 0): Job {
+    fun onIOInterval(
+        cancel: () -> Unit,
+        period: Long,
+        delay: Long = 0,
+        interval: (index: Int) -> Unit
+    ): Job {
         return GlobalScope.launch(Dispatchers.IO) {
             var index = 0
             try {
@@ -485,13 +517,13 @@ object Run {
 
     /**
      * 创建UI异步心跳任务
-     * @param [interval] 心跳回调,你可以传入[AbsInterval]按需覆写你需要的接口
      * @param [times]    心跳次数
      * @param [period]   心跳间隔(毫秒)
+     * @param [interval] 心跳回调,你可以传入[AbsInterval]按需覆写你需要的接口
      * @return 可取消的任务
      */
     @JvmStatic
-    fun onUiTimesInterval(interval: Interval, times: Int, period: Long): Job {
+    fun onUiTimesInterval(times: Int, period: Long,interval: Interval): Job {
         return GlobalScope.launch(Dispatchers.Main) {
             var done = false
             try {
@@ -514,13 +546,18 @@ object Run {
 
     /**
      * 创建UI异步心跳任务
-     * @param [interval] 心跳任务
      * @param [times]    心跳次数
      * @param [period]   心跳间隔(毫秒)
      * @param [delay]    延迟执行(毫秒)
+     * @param [interval] 心跳任务
      * @return 可取消的任务
      */
-    fun onUiTimesInterval(interval: (index: Int) -> Unit, times: Int, period: Long, delay: Long = 0): Job {
+    fun onUiTimesInterval(
+        times: Int,
+        period: Long,
+        delay: Long = 0,
+        interval: (index: Int) -> Unit
+    ): Job {
         return GlobalScope.launch(Dispatchers.Main) {
             delay(delay)
             repeat(times) { i ->
@@ -532,14 +569,14 @@ object Run {
 
     /**
      * 创建UI异步心跳任务
-     * @param [interval] 心跳回调,你可以传入[AbsInterval]按需覆写你需要的接口
      * @param [times]    心跳次数
      * @param [period]   心跳间隔(毫秒)
      * @param [delay]    延迟执行(毫秒)
+     * @param [interval] 心跳回调,你可以传入[AbsInterval]按需覆写你需要的接口
      * @return 可取消的任务
      */
     @JvmStatic
-    fun onUiTimesInterval(interval: Interval, times: Int, period: Long, delay: Long = 0): Job {
+    fun onUiTimesInterval(times: Int, period: Long, delay: Long = 0,interval: Interval): Job {
         return GlobalScope.launch(Dispatchers.Main) {
             var done = false
             try {
@@ -560,56 +597,15 @@ object Run {
         }
     }
 
-
-    /**
-     * 创建UI异步心跳任务
-     * @param [interval] 心跳任务
-     * @param [finish] 完成任务
-     * @param [cancel]   取消任务
-     * @param [times]    心跳次数
-     * @param [period]   心跳间隔(毫秒)
-     * @param [delay]    延迟执行(毫秒)
-     * @return 可取消的任务
-     */
-    fun onUiTimesInterval(
-        interval: (index: Int) -> Unit,
-        finish: () -> Unit,
-        cancel: () -> Unit,
-        times: Int,
-        period: Long,
-        delay: Long = 0
-    ): Job {
-        return GlobalScope.launch(Dispatchers.Main) {
-            var done = false
-            try {
-                delay(delay)
-                repeat(times) { i ->
-                    interval(i)
-                    done = i == times - 1
-                    delay(period)
-                }
-
-            } finally {
-                if (done) {
-                    finish()
-                } else {
-                    cancel()
-                }
-            }
-
-        }
-    }
-
-
     /**
      * 创建异步心跳任务
-     * @param [interval] 心跳回调,你可以传入[AbsInterval]按需覆写你需要的接口
      * @param [times]    心跳次数
      * @param [period]   心跳间隔(毫秒)
+     * @param [interval] 心跳回调,你可以传入[AbsInterval]按需覆写你需要的接口
      * @return 可取消的任务
      */
     @JvmStatic
-    fun onIOTimesInterval(interval: Interval, times: Int, period: Long): Job {
+    fun onIOTimesInterval(times: Int, period: Long,interval: Interval): Job {
         return GlobalScope.launch(Dispatchers.IO) {
             var done = false
             try {
@@ -632,12 +628,17 @@ object Run {
 
     /**
      * 创建IO心跳任务
-     * @param [interval] 心跳任务
      * @param [count]    心跳次数
      * @param [period]   心跳间隔(毫秒)
      * @param [delay]    延迟执行(毫秒)
+     * @param [interval] 心跳任务
      */
-    fun onIOTimesInterval(interval: (index: Int) -> Unit, count: Int, period: Long, delay: Long = 0): Job {
+    fun onIOTimesInterval(
+        count: Int,
+        period: Long,
+        delay: Long = 0,
+        interval: (index: Int) -> Unit
+    ): Job {
         return GlobalScope.launch(Dispatchers.IO) {
             delay(delay)
             repeat(count) { i ->
@@ -649,14 +650,14 @@ object Run {
 
     /**
      * 创建异步心跳任务
-     * @param [interval] 心跳回调,你可以传入[AbsInterval]按需覆写你需要的接口
      * @param [times]    心跳次数
      * @param [period]   心跳间隔(毫秒)
      * @param [delay]    延迟执行(毫秒)
+     * @param [interval] 心跳回调,你可以传入[AbsInterval]按需覆写你需要的接口
      * @return 可取消的任务
      */
     @JvmStatic
-    fun onIOTimesInterval(interval: Interval, times: Int, period: Long, delay: Long = 0): Job {
+    fun onIOTimesInterval(times: Int, period: Long, delay: Long = 0, interval: Interval): Job {
         return GlobalScope.launch(Dispatchers.IO) {
             var done = false
             try {
@@ -674,45 +675,6 @@ object Run {
                     interval.cancel()
                 }
             }
-        }
-    }
-
-    /**
-     * 创建异步心跳任务
-     * @param [interval] 心跳任务
-     * @param [finish]   完成任务
-     * @param [cancel]   取消任务
-     * @param [times]    心跳次数
-     * @param [period]   心跳间隔(毫秒)
-     * @param [delay]    延迟执行(毫秒)
-     * @return 可取消的任务
-     */
-    fun onIOTimesInterval(
-        interval: (index: Int) -> Unit,
-        finish: () -> Unit,
-        cancel: () -> Unit,
-        times: Int,
-        period: Long,
-        delay: Long = 0
-    ): Job {
-        return GlobalScope.launch(Dispatchers.Main) {
-            var done = false
-            try {
-                delay(delay)
-                repeat(times) { i ->
-                    interval(i)
-                    done = i == times - 1
-                    delay(period)
-                }
-
-            } finally {
-                if (done) {
-                    finish()
-                } else {
-                    cancel()
-                }
-            }
-
         }
     }
 
